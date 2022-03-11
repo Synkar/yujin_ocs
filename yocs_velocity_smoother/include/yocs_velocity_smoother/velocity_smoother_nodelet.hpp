@@ -61,7 +61,7 @@ private:
   double speed_lim_w, accel_lim_w, decel_lim_w;
   double decel_factor;
 
-  double frequency;
+  double frequency, timeout_sec_;
 
   geometry_msgs::Twist last_cmd_vel;
   geometry_msgs::Twist  current_vel;

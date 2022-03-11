@@ -62,6 +62,7 @@ void VelocitySmoother::reconfigCB(yocs_velocity_smoother::paramsConfig &config, 
   decel_factor = config.decel_factor;
   decel_lim_v  = decel_factor*accel_lim_v;
   decel_lim_w  = decel_factor*accel_lim_w;
+  timeout_sec_ = config.timeout_sec;
   locker.unlock();
 }
 
@@ -135,8 +136,8 @@ void VelocitySmoother::spin()
     double decel_lim_w_(decel_lim_w);
     locker.unlock();
     
-    if ((input_active == true) && (cb_avg_time > 0.0) &&
-        ((ros::Time::now() - last_cb_time).toSec() > std::min(3.0*cb_avg_time, 0.5)))
+    if ((input_active == true) &&
+        ((ros::Time::now() - last_cb_time).toSec() > timeout_sec_))
     {
       // Velocity input no active anymore; normally last command is a zero-velocity one, but reassure
       // this, just in case something went wrong with our input, or he just forgot good manners...
@@ -285,6 +286,7 @@ bool VelocitySmoother::init(ros::NodeHandle& nh)
   nh.param("quiet",          quiet,         quiet);
   nh.param("decel_factor",   decel_factor,   1.0);
   nh.param("robot_feedback", feedback, (int)NONE);
+  nh.param("timeout_sec",    timeout_sec_,  0.5);
 
   if ((int(feedback) < NONE) || (int(feedback) > COMMANDS))
   {
